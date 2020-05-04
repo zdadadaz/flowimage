@@ -1,0 +1,4 @@
+.directory
+.spyproject/
+__pycache__/
+model/*
