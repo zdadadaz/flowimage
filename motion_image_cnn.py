@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
 import pickle
 from PIL import Image
@@ -77,7 +76,7 @@ def main():
                         )
     #Training
     model.run()
-    
+
 class Motion_image_CNN():
     def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, val_loader, channel,test_video, model_name, device):
         self.model_name = model_name

@@ -19,7 +19,7 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from dataloader.split_train_test_video import *
- 
+
 
 
 class motion_image_dataset(Dataset):
@@ -113,7 +113,7 @@ class motion_image_dataset(Dataset):
         else:
             raise ValueError('There are only train and val mode')
         return sample
-    
+
 
 class Motion_Image_DataLoader():
     def __init__(self, BATCH_SIZE, num_workers, in_channel,  path, ucf_list, ucf_split, root_path):
