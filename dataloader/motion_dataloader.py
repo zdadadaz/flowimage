@@ -16,7 +16,7 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from dataloader.split_train_test_video import *
- 
+
 
 
 class motion_dataset(Dataset):  
