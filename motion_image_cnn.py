@@ -29,12 +29,13 @@ from unet import UNet3D
 
 parser = argparse.ArgumentParser(description='UCF101 motion stream on resnet101')
 parser.add_argument('--epochs', default=50, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=1, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--batch-size', default=8, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-5, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('--modelName', default='noName', type=str, metavar='N', help='model name')
+parser.add_argument('--frame', default=32, type=int, metavar='N', help='model name')
 
 def main():
     global arg
@@ -48,11 +49,11 @@ def main():
                         path='./../../data/UCF101',
                         ucf_list='./UCF_list/',
                         ucf_split='01',
-                        in_channel=32,
+                        in_channel=arg.frame,
                         root_path = './'
                         )
     
-    train_loader,test_loader, test_video = data_loader.run()
+    train_loader,val_loader, test_video = data_loader.run()
     #Model 
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -61,7 +62,7 @@ def main():
                         # Data Loader
                         model_name= arg.modelName,
                         train_loader=train_loader,
-                        test_loader=test_loader,
+                        val_loader=val_loader,
                         # Utility
                         start_epoch=arg.start_epoch,
                         resume=arg.resume,
@@ -70,7 +71,7 @@ def main():
                         nb_epochs=arg.epochs,
                         lr=arg.lr,
                         batch_size=arg.batch_size,
-                        channel = 32,
+                        channel = arg.frame,
                         test_video=test_video,
                         device = device
                         )
@@ -78,7 +79,7 @@ def main():
     model.run()
     
 class Motion_image_CNN():
-    def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, test_loader, channel,test_video, model_name, device):
+    def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, val_loader, channel,test_video, model_name, device):
         self.model_name = model_name
         self.nb_epochs=nb_epochs
         self.lr=lr
@@ -87,8 +88,8 @@ class Motion_image_CNN():
         self.start_epoch=start_epoch
         self.evaluate=evaluate
         # self.train_loader=train_loader
-        # self.test_loader=test_loader
-        self.dataloader={'train':train_loader, 'test':test_loader}
+        # self.val_loader=val_loader
+        self.dataloader={'train':train_loader, 'val':val_loader}
         self.best_prec1=0
         self.channel=channel
         self.test_video=test_video
@@ -141,7 +142,7 @@ class Motion_image_CNN():
             cudnn.benchmark = True
             for self.epoch in range(self.start_epoch, self.nb_epochs):
                 print("Epoch #{}".format(self.epoch), flush=True)
-                for phase in ['train', 'val']:
+                for phase in ['val']: #'train',
                     for i in range(torch.cuda.device_count()):
                         torch.cuda.reset_max_memory_allocated(i)
                         torch.cuda.reset_max_memory_cached(i)
@@ -191,8 +192,11 @@ class Motion_image_CNN():
         
                     # compute output
                     output = self.model(input_var)
-                    loss = torch.nn.functional.binary_cross_entropy_with_logits(output[:,:,:-1,:,:], target_var,reduction="sum")
-                   
+                    # loss = torch.nn.functional.binary_cross_entropy_with_logits(output[:,:,:-1,:,:], target_var,reduction="sum")
+                    loss_flow = torch.norm(output[:,:,:-1,:,:] - target_var,2,1) # normalize dimension : 2 for x, y
+                    loss_flow = torch.norm(loss_flow,2,1) # normalize frames 32
+                    loss = loss_flow.sum()
+                    
                     # compute gradient and do SGD step
                     if phase == 'train':
                         self.optimizer.zero_grad()
