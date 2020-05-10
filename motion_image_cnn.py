@@ -28,7 +28,7 @@ from unet import UNet3D
 
 parser = argparse.ArgumentParser(description='UCF101 motion stream on resnet101')
 parser.add_argument('--epochs', default=50, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=8, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--batch-size', default=1, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-5, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
@@ -141,7 +141,7 @@ class Motion_image_CNN():
             cudnn.benchmark = True
             for self.epoch in range(self.start_epoch, self.nb_epochs):
                 print("Epoch #{}".format(self.epoch), flush=True)
-                for phase in ['val']: #'train',
+                for phase in ['train','val']: 
                     for i in range(torch.cuda.device_count()):
                         torch.cuda.reset_max_memory_allocated(i)
                         torch.cuda.reset_max_memory_cached(i)

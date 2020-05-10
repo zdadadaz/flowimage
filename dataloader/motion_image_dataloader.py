@@ -96,10 +96,13 @@ class motion_image_dataset(Dataset):
             self.video, nb_clips = self.keys[idx].split('-')
             self.clips_idx = random.randint(1,int(nb_clips))
         elif self.mode == 'val':
-            self.video,self.clips_idx = self.keys[idx].split('-')
+            # self.video,self.clips_idx = self.keys[idx].split('-')
+            self.video, nb_clips = self.keys[idx].split('-')
+            self.clips_idx = random.randint(1,int(nb_clips))
         else:
             raise ValueError('There are only train and val mode')
-
+        
+        
         label = self.values[idx]
         label = int(label)-1 
         data = self.stackopf()
@@ -108,7 +111,6 @@ class motion_image_dataset(Dataset):
         if self.mode == 'train':
             sample = (image,data)
         elif self.mode == 'val':
-            # sample = (self.video,image,data)
             sample = (image,data)
         else:
             raise ValueError('There are only train and val mode')
@@ -127,6 +129,8 @@ class Motion_Image_DataLoader():
         # split the training and testing videos
         splitter = UCF101_splitter(path=ucf_list,split=ucf_split)
         self.train_video, self.test_video = splitter.split_video() # video filename list
+        self.missingfile = set(['ApplyEyeMakeup_g04_c04'])
+        # print(self.train_video.keys())
         
     def load_frame_count(self):
         #print '==> Loading frame number of each video'
@@ -144,7 +148,7 @@ class Motion_Image_DataLoader():
     def run(self):
         self.load_frame_count()
         self.get_training_dic()
-        self.val_sample19()
+        self.get_val_dict()
         train_loader = self.train()
         val_loader = self.val()
 
@@ -161,16 +165,28 @@ class Motion_Image_DataLoader():
                 clip_idx = index*sampling_interval
                 key = video + '-' + str(clip_idx+1)
                 self.dic_test_idx[key] = self.test_video[video]
-             
+                
+    def get_val_dict(self):
+        self.dic_test_idx={}
+        # print( self.test_video)
+        for video in self.test_video:
+            nb_clips = self.frame_count[video]-self.in_channel+1
+            if nb_clips <=0 or video in self.missingfile:
+                print("nb_clips smaller than frames required, so skip val",video, self.frame_count[video])
+            else:
+                key = video +'-' + str(nb_clips)
+                self.dic_test_idx[key] = self.test_video[video] 
+    
     def get_training_dic(self):
         self.dic_video_train={}
+        # print(self.train_video)
         for video in self.train_video:
-            
             nb_clips = self.frame_count[video]-self.in_channel+1
-            if nb_clips <=0:
-                print("nb_clips error")
-            key = video +'-' + str(nb_clips)
-            self.dic_video_train[key] = self.train_video[video] 
+            if nb_clips <=0 or video in self.missingfile:
+                print("nb_clips smaller than frames required, so skip train",video, self.frame_count[video])
+            else:
+                key = video +'-' + str(nb_clips)
+                self.dic_video_train[key] = self.train_video[video] 
                             
     def train(self):
         training_set = motion_image_dataset(dic=self.dic_video_train, in_channel=self.in_channel, root_dir=self.data_path,
