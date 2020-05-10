@@ -167,6 +167,8 @@ class Motion_Image_DataLoader():
         for video in self.train_video:
             
             nb_clips = self.frame_count[video]-self.in_channel+1
+            if nb_clips <=0:
+                print("nb_clips error")
             key = video +'-' + str(nb_clips)
             self.dic_video_train[key] = self.train_video[video] 
                             

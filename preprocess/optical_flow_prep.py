@@ -57,8 +57,8 @@ def writeOpticalFlow(path, outpath, filename,w,h,c):
     # 	return count
 
 
+
         
-        
+
     
-    
-    
+
