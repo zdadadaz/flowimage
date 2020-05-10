@@ -24,7 +24,7 @@ from network import *
 import dataloader
 from unet import UNet3D
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# <!-- os.environ["CUDA_VISIBLE_DEVICES"] = "1" -->
 
 parser = argparse.ArgumentParser(description='UCF101 motion stream on resnet101')
 parser.add_argument('--epochs', default=50, type=int, metavar='N', help='number of total epochs')
