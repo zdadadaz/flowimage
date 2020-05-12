@@ -152,6 +152,7 @@ class Motion_image_CNN():
                                                         info['Epoch_loss'],
                                                         info['lr']
                                                         ))
+                    qq.flush()
                     is_best = info['Epoch_loss'] < self.best_prec1
                     # save model
                     if is_best:
