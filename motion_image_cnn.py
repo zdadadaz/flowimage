@@ -112,18 +112,19 @@ class Motion_image_CNN():
         self.scheduler = ReduceLROnPlateau(self.optimizer, 'min', patience=1,verbose=True)
 
     def resume_and_evaluate(self):
-        if self.resume:
-            if os.path.isfile(self.resume):
-                print("==> loading checkpoint '{}'".format(self.resume))
-                checkpoint = torch.load(self.resume)
+        if self.output is not None:
+            resume_path = os.path.join(self.output, 'checkpoint.pth.tar')
+            if os.path.isfile(resume_path):
+                print("==> loading checkpoint '{}'".format(resume_path))
+                checkpoint = torch.load(resume_path)
                 self.start_epoch = checkpoint['epoch']
                 self.best_prec1 = checkpoint['best_prec1']
                 self.model.load_state_dict(checkpoint['state_dict'])
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
                 print("==> loaded checkpoint '{}' (epoch {}) (best_prec1 {})"
-                  .format(self.resume, checkpoint['epoch'], self.best_prec1))
+                  .format(resume_path, checkpoint['epoch'], self.best_prec1))
             else:
-                print("==> no checkpoint found at '{}'".format(self.resume))
+                print("==> no checkpoint found at '{}'".format(resume_path))
         if self.evaluate:
             self.epoch=0
             prec1, val_loss = self.validate_1epoch()
@@ -205,7 +206,7 @@ class Motion_image_CNN():
                     total += loss.item()
                     n += label.size(0)
                     epoch_loss = total/n/112/112
-                    losses.update(loss.item(), data.size(0))
+                    losses.update(loss_flow.mean().item(), data.size(0))
                     
                     # measure elapsed time
                     batch_time.update(time.time() - end)
