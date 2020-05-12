@@ -146,7 +146,7 @@ class Motion_image_CNN():
                         torch.cuda.reset_max_memory_allocated(i)
                         torch.cuda.reset_max_memory_cached(i)
                     info = self.train_1epoch(phase = phase, dataloader=self.dataloader[phase])
-                    f.write("{},{},{},{},{}".format(self.epoch,
+                    qq.write("{},{},{},{},{}\n".format(self.epoch,
                                                         phase,
                                                         info['Loss'],
                                                         info['Epoch_loss'],
@@ -156,9 +156,9 @@ class Motion_image_CNN():
                     # save model
                     if is_best:
                         self.best_prec1 = prec1
-                        with open(self.output+'/motion_video_preds.pickle','wb') as f:
-                            pickle.dump(self.dic_video_level_preds,f)
-                        f.close() 
+#                         with open(self.output+'/motion_video_preds.pickle','wb') as f:
+#                             pickle.dump(self.dic_video_level_preds,f)
+#                         f.close() 
                     
                 save_checkpoint({
                     'epoch': self.epoch,
@@ -168,7 +168,7 @@ class Motion_image_CNN():
                 },is_best,self.output+'/checkpoint.pth.tar',self.output + '/model_best.pth.tar')
     
     def train_1epoch(self, phase, dataloader ):
-        print('==> Epoch:[{0}/{1}][training stage]'.format(self.epoch, self.nb_epochs))
+        print('==> Epoch:[{0}/{1}][{2} stage]'.format(self.epoch, self.nb_epochs, phase))
 
         batch_time = AverageMeter()
         data_time = AverageMeter()
@@ -215,11 +215,11 @@ class Motion_image_CNN():
                     pbar.set_postfix_str("loss: {:.4f}".format(epoch_loss))
                     pbar.update()
         
-        info = {'Epoch':[self.epoch],
-                'Batch Time':[round(batch_time.avg,3)],
-                'Data Time':[round(data_time.avg,3)],
-                'Loss':[round(losses.avg,5)],
-                'Epoch_loss':[round(epoch_loss,5)],
+        info = {'Epoch':self.epoch,
+                'Batch Time':round(batch_time.avg,3),
+                'Data Time':round(data_time.avg,3),
+                'Loss':round(losses.avg,5),
+                'Epoch_loss':round(epoch_loss,5),
                 'lr': self.optimizer.param_groups[0]['lr']
                 }
         return info
