@@ -89,7 +89,7 @@ class Motion_image_CNN():
         # self.train_loader=train_loader
         # self.val_loader=val_loader
         self.dataloader={'train':train_loader, 'val':val_loader}
-        self.best_prec1=0
+        self.best_prec1=100000000
         self.channel=channel
         self.test_video=test_video
         self.device = device
@@ -153,20 +153,18 @@ class Motion_image_CNN():
                                                         info['lr']
                                                         ))
                     qq.flush()
-                    is_best = info['Epoch_loss'] < self.best_prec1
-                    # save model
-                    if is_best:
-                        self.best_prec1 = prec1
-#                         with open(self.output+'/motion_video_preds.pickle','wb') as f:
-#                             pickle.dump(self.dic_video_level_preds,f)
-#                         f.close() 
-                    
+                
+                is_best = info['Epoch_loss'] < self.best_prec1    
+                # save model
+                if is_best:
+                    self.best_prec1 = prec1
                 save_checkpoint({
                     'epoch': self.epoch,
                     'state_dict': self.model.state_dict(),
                     'best_prec1': self.best_prec1,
                     'optimizer' : self.optimizer.state_dict()
                 },is_best,self.output+'/checkpoint.pth.tar',self.output + '/model_best.pth.tar')
+                
     
     def train_1epoch(self, phase, dataloader ):
         print('==> Epoch:[{0}/{1}][{2} stage]'.format(self.epoch, self.nb_epochs, phase))
